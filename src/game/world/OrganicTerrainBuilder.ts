@@ -182,7 +182,12 @@ export class OrganicTerrainBuilder {
       const dist = getDistToTrack(worldX, worldZ);
 
       let height = 0;
-      if (dist > 16.0) {
+      // Strictly flatten terrain under pit building, team paddocks, garages and Modern VIP headquarters
+      const isUnderPitBuilding = Math.abs(worldX) <= 65 && worldZ >= -115 && worldZ <= -82;
+      const isUnderVIPBuilding = worldX >= 64 && worldX <= 112 && worldZ >= -170 && worldZ <= -132;
+      if (isUnderPitBuilding || isUnderVIPBuilding) {
+        height = 0;
+      } else if (dist > 16.0) {
         // Natural rolling harmonic terrain modulation
         const elevationWeight = Math.min(1.0, (dist - 16.0) / 28.0);
 

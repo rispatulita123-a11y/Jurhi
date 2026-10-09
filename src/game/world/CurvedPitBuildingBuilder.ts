@@ -235,7 +235,7 @@ export class CurvedPitBuildingBuilder {
     // Ground Level Garage Inter-Bay Wall Dividers & High-Gloss Epoxy Floor
     const bayFloorGeo = new THREE.PlaneGeometry(buildingLength - 2.0, 7.2);
     bayFloorGeo.rotateX(-Math.PI / 2);
-    bayFloorGeo.translate(midX, 0.025, frontZ + 3.6);
+    bayFloorGeo.translate(midX, 0.08, frontZ + 3.6);
     epoxyFloorGeos.push(bayFloorGeo);
 
     const backDropGeo = new THREE.PlaneGeometry(buildingLength - 2.0, 4.8);
@@ -382,7 +382,7 @@ export class CurvedPitBuildingBuilder {
     clTex.colorSpace = THREE.SRGBColorSpace;
     const clMat = new THREE.MeshStandardMaterial({ map: clTex, roughness: 0.25, metalness: 0.6 });
     const centerLoungeMesh = new THREE.Mesh(centerLoungeGeo, clMat);
-    centerLoungeMesh.position.set(midX, 2.3, frontZ - 0.05);
+    centerLoungeMesh.position.set(midX, 2.3, frontZ - 0.12);
     rootGroup.add(centerLoungeMesh);
 
     // Team Header Signage for Garage 01 & Garage 02

@@ -36,7 +36,7 @@ export class GrandstandCrowdSystem {
   private uniformCarPos: { value: THREE.Vector3 } = { value: new THREE.Vector3(0, 0, 0) };
   private uniformCarSpeed: { value: number } = { value: 0 };
   private uniformExcitement: { value: number } = { value: 0.25 };
-  private uniformSunDir: { value: THREE.Vector3 } = { value: new THREE.Vector3(0.5, 0.8, 0.3).normalize() };
+  private uniformSunDir: { value: THREE.Vector3 } = { value: new THREE.Vector3(-0.68, 0.17, -0.71).normalize() };
 
   private static readonly HUMAN_PALETTES = [
     { torso: 0xdc2626, cap: 0x991b1b, flag: 0xef4444 }, // Apex Racing Red
@@ -257,9 +257,9 @@ export class GrandstandCrowdSystem {
           mat3 normalMat = mat3(instanceMatrix);
           vNormal = normalize(normalMat * transformedNormal);
 
-          // Sunlight Diffuse & Ambient Calculation
+          // Sunlight Diffuse & Ambient Calculation calibrated for twilight / night atmosphere
           float nDotL = max(dot(vNormal, uSunDir), 0.0);
-          vDiffuse = 0.45 + nDotL * 0.65;
+          vDiffuse = 0.18 + nDotL * 0.48;
 
           // Color Assignment based on discrete Body Part
           if (bodyPart == 0) {
@@ -285,6 +285,8 @@ export class GrandstandCrowdSystem {
       fragmentShader: /* glsl */ `
         precision highp float;
 
+        uniform vec3 uSunDir;
+
         varying vec3 vNormal;
         varying vec3 vWorldPos;
         varying vec3 vColor;
@@ -298,21 +300,25 @@ export class GrandstandCrowdSystem {
           // PBR enhancements per anatomical body part
           if (abs(vBodyPart - 2.0) < 0.2 || vBodyPart >= 3.8) {
             // Warm human skin subsurface scattering approximation
-            finalColor += vec3(0.045, 0.018, 0.010) * vDiffuse;
+            finalColor += vec3(0.025, 0.012, 0.008) * vDiffuse;
           } else if (abs(vBodyPart - 3.0) < 0.2) {
             // Polarized sport sunglasses & cap visor specular sheen
-            vec3 halfVec = normalize(viewDir + vec3(0.5, 0.8, 0.3));
-            float spec = pow(max(dot(vNormal, halfVec), 0.0), 24.0);
-            finalColor += vec3(0.40, 0.45, 0.55) * spec * 0.45;
+            vec3 halfVec = normalize(viewDir + uSunDir);
+            float spec = pow(max(dot(vNormal, halfVec), 0.0), 16.0);
+            finalColor += vec3(0.25, 0.30, 0.38) * spec * 0.25;
           } else if (abs(vBodyPart) < 0.2) {
             // Textured dark indigo denim pants
-            finalColor = mix(finalColor, vec3(0.12, 0.14, 0.22) * vDiffuse, 0.65);
+            finalColor = mix(finalColor, vec3(0.10, 0.12, 0.18) * vDiffuse, 0.65);
           }
           
-          // Subtle stadium rim-light for depth definition
+          // Subtle stadium rim-light toned down for twilight/night depth definition
           float rim = 1.0 - max(dot(viewDir, vNormal), 0.0);
-          rim = smoothstep(0.68, 0.98, rim) * 0.20;
-          finalColor += vec3(0.95, 0.98, 1.0) * rim;
+          rim = smoothstep(0.72, 0.98, rim) * 0.08;
+          finalColor += vec3(0.60, 0.70, 0.85) * rim;
+
+          // Atmospheric nighttime integration: harmonize vivid shirt dyes with deep twilight ambient
+          vec3 twilightFilter = vec3(0.82, 0.86, 0.94);
+          finalColor *= twilightFilter;
 
           gl_FragColor = vec4(finalColor, 1.0);
         }
@@ -364,7 +370,7 @@ export class GrandstandCrowdSystem {
           vNormal = normalize(normalMat * normal);
 
           float nDotL = abs(dot(vNormal, uSunDir));
-          vDiffuse = 0.45 + nDotL * 0.60;
+          vDiffuse = 0.20 + nDotL * 0.48;
           vColor = aFlagColor;
 
           gl_Position = projectionMatrix * viewMatrix * worldPos;
@@ -388,7 +394,7 @@ export class GrandstandCrowdSystem {
             flagPattern = mix(flagPattern, vec3(1.0) * check, 0.60);
           }
 
-          vec3 finalColor = flagPattern * vDiffuse;
+          vec3 finalColor = flagPattern * vDiffuse * vec3(0.82, 0.86, 0.94);
           gl_FragColor = vec4(finalColor, 1.0);
         }
       `,

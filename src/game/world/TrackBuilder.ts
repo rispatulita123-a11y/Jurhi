@@ -309,9 +309,9 @@ export class TrackBuilder {
       roughness: 0.22,
     });
     this.metalSilverMat = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
-      metalness: 0.90,
-      roughness: 0.18,
+      color: 0x94a3b8,
+      metalness: 0.75,
+      roughness: 0.35,
     });
 
     // Specialized Low-Overhead Structural Truss Material (Matte Titanium-Carbon Composite)
@@ -1196,6 +1196,8 @@ export class TrackBuilder {
     const r = this.cornerRadius; // 38
     // Check 4 straight segments
     if (Math.abs(x) <= c) {
+      // Pit lane, garages and paddock corridor on South Straight (strictly flat: z from -138 to -84, |x| <= 68)
+      if (z >= -138 && z <= -84 && Math.abs(x) <= 68) return 0;
       const dSouth = Math.abs(z - (-this.halfSize));
       const dNorth = Math.abs(z - this.halfSize);
       if (dSouth < 22 || dNorth < 22) return Math.min(dSouth, dNorth);
@@ -2883,8 +2885,21 @@ export class TrackBuilder {
             mesh.geometry.computeBoundingBox();
             if (mesh.material) {
               const mat = mesh.material as THREE.MeshStandardMaterial;
-              mat.roughness = Math.max(0.25, mat.roughness);
+              mat.roughness = Math.max(0.40, mat.roughness);
               mat.side = THREE.DoubleSide;
+              // Calibrate materials to integrate harmoniously with twilight and night atmosphere
+              const meshNameLow = mesh.name.toLowerCase();
+              if (meshNameLow.includes('canopy')) {
+                // Tone down pure white canopy to realistic architectural PTFE membrane
+                mat.color.setHex(0x94a3b8);
+                mat.roughness = 0.65;
+              } else if (meshNameLow.includes('deck') || meshNameLow.includes('scaffold')) {
+                mat.color.multiplyScalar(0.70);
+                mat.roughness = Math.max(0.50, mat.roughness);
+              } else if (meshNameLow.includes('seat')) {
+                mat.color.multiplyScalar(0.75);
+                mat.roughness = Math.max(0.55, mat.roughness);
+              }
               if (mesh.name.includes('Banner') && !mat.map) {
                 if (!bannerTexture) {
                   bannerTexture = texLoader.load('/textures/grandstands/sponsor_banner_apex.png');
@@ -2942,30 +2957,30 @@ export class TrackBuilder {
     group.name = 'ProceduralSecondaryGrandstandFallback';
 
     const steelMat = new THREE.MeshStandardMaterial({
-      color: 0x94a3b8,
-      metalness: 0.9,
-      roughness: 0.3,
+      color: 0x64748b,
+      metalness: 0.75,
+      roughness: 0.45,
     });
     const deckMat = new THREE.MeshStandardMaterial({
-      color: 0x64748b,
-      metalness: 0.8,
-      roughness: 0.4,
+      color: 0x475569,
+      metalness: 0.60,
+      roughness: 0.55,
     });
     const concreteMat = new THREE.MeshStandardMaterial({
       color: 0x334155,
       roughness: 0.9,
     });
     const seatRedMat = new THREE.MeshStandardMaterial({
-      color: 0xdc2626,
-      roughness: 0.45,
+      color: 0x991b1b,
+      roughness: 0.60,
     });
     const seatBlueMat = new THREE.MeshStandardMaterial({
-      color: 0x1d4ed8,
-      roughness: 0.45,
+      color: 0x1e3a8a,
+      roughness: 0.60,
     });
     const canopyMat = new THREE.MeshStandardMaterial({
-      color: 0xf1f5f9,
-      roughness: 0.5,
+      color: 0x94a3b8,
+      roughness: 0.65,
       side: THREE.DoubleSide,
     });
 
@@ -3731,11 +3746,11 @@ export class TrackBuilder {
       { x: 156, z: 125, tx: 125, tz: 110 },
       { x: 125, z: 156, tx: 110, tz: 125 },
 
-      // North Straight - Aiming South onto the track
+      // North Straight - Aiming South onto the track (placed behind North Secondary Grandstand at Z = 172 to eliminate structure piercing)
       { x: 75, z: 156, tx: 75, tz: 130 },
-      { x: 40, z: 156, tx: 40, tz: 130 },
-      { x: 0, z: 156, tx: 0, tz: 130 },
-      { x: -40, z: 156, tx: -40, tz: 130 },
+      { x: 42, z: 172, tx: 42, tz: 130 },
+      { x: 0, z: 172, tx: 0, tz: 130 },
+      { x: -42, z: 172, tx: -42, tz: 130 },
       { x: -75, z: 156, tx: -75, tz: 130 },
 
       // Turn 3 Corner Outer Towers (North-West) - Aiming at Turn 3 apex & exit
@@ -4012,8 +4027,8 @@ export class TrackBuilder {
         return false;
       }
 
-      // 2. North Grandstand Exclusion Zone
-      if (x >= -50 - canopyR && x <= 50 + canopyR && z >= 139.0 - canopyR && z <= 170.0 + canopyR) {
+      // 2. North Grandstand & High-Mast Floodlight Exclusion Zone
+      if (x >= -50 - canopyR && x <= 50 + canopyR && z >= 139.0 - canopyR && z <= 176.0 + canopyR) {
         return false;
       }
 

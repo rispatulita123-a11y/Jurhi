@@ -80,8 +80,8 @@ export class ModernVIPBuildingBuilder {
     warmEmissiveGeos.push(gfInteriorGlow);
 
     // Level 1 Intermediate Slab
-    const slab1 = new THREE.BoxGeometry(33, 0.7, 23);
-    slab1.translate(0, 6.05, 0);
+    const slab1 = new THREE.BoxGeometry(33, 0.5, 23);
+    slab1.translate(0, 5.85, 0);
     darkCompositeGeos.push(slab1);
 
     // =========================================================================
@@ -92,8 +92,8 @@ export class ModernVIPBuildingBuilder {
     const vipLoungeDepth = 25;
     const cantileverZ = 2.2;
 
-    const slab2Base = new THREE.BoxGeometry(vipLoungeWidth, 0.8, vipLoungeDepth);
-    slab2Base.translate(0, 6.7, cantileverZ);
+    const slab2Base = new THREE.BoxGeometry(vipLoungeWidth, 0.6, vipLoungeDepth);
+    slab2Base.translate(0, 6.45, cantileverZ);
     darkCompositeGeos.push(slab2Base);
 
     // Angled aerodynamic facade framing
@@ -172,6 +172,7 @@ export class ModernVIPBuildingBuilder {
       metalness: 0.92,
       transparent: true,
       opacity: 0.72,
+      depthWrite: false,
     });
 
     const warmEmissiveMat = new THREE.MeshBasicMaterial({
